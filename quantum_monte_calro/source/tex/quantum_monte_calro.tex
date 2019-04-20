@@ -1,7 +1,9 @@
 \documentclass[dvipdfmx]{beamer}
 
 %Beamerの設定
-\usetheme{Boadilla}
+% \usetheme{Boadilla}
+\usetheme{Antibes}
+
 
 %Beamerフォント設定
 \usepackage{newtxtext,newtxmath} % TXフォント
@@ -36,7 +38,7 @@
 \definecolor{AlmostBlack}{RGB}{38,38,38}
 \setbeamercolor{normal text}{fg=AlmostBlack}  % 本文カラー
 \setbeamercolor{structure}{fg=UniBlue} % 見出しカラー
-\setbeamercolor{block title}{fg=UniBlue!50!black} % ブロック部分タイトルカラー
+% \setbeamercolor{block title}{fg=UniBlue!50!black} % ブロック部分タイトルカラー
 \setbeamercolor{alerted text}{fg=AlertOrange} % \alert 文字カラー
 \mode<beamer>{
     \definecolor{BackGroundGray}{RGB}{254,254,254}
@@ -67,7 +69,7 @@
 \section{量子力学　復習}
 \subsection{シュレディンガー方程式}
 
-\begin{frame}{\insertsubsection}
+\begin{frame}
     ポテンシャルが時間に依存する場合
     \begin{block}{時間に依存するシュレディンガー方程式}
         \begin{equation}
@@ -78,7 +80,7 @@
     時間に関して$1$階、位置に関して$2$階の偏微分方程式
     \end{frame}
 
-    \begin{frame}{\insertsubsection}
+    \begin{frame}
     ポテンシャルが時間に依存しない場合
         \begin{equation}
             i\hbar\dfrac{\partial \Psi(x,t)}{\partial t} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,t)}{\partial x^2} + V(x)\Psi(x,t)
@@ -100,7 +102,7 @@
     \end{block}
     \end{frame}
 
-    \begin{frame}{\insertsubsection}
+    \begin{frame}
         \begin{block}{ハミルトニアン$\hat{H}$}
             \begin{equation}
                 \hat{H} = -\dfrac{\hbar^2}{2m}\dfrac{d^2}{dx^2} + V(x)
@@ -119,7 +121,7 @@
 
     \end{frame}
 
-    \begin{frame}{\insertsubsection}
+    \begin{frame}
         (時間に依存しない)シュレディンガー方程式を解くとは、
 
         \alert{
@@ -130,7 +132,7 @@
     \end{frame}
 
     \subsection{物理量の観測}
-    \begin{frame}{\insertsubsection}
+    \begin{frame}
 
         古典力学の世界では、ある時刻での粒子の位置と速度を与えると、全ての時刻での位置と運動量を完全に決定できる。
         つまり、現在の粒子の情報がわかれば未来での粒子の情報を予言できる。$\mathcal{O}(h)$が無視できる。
@@ -152,7 +154,7 @@
 
     \end{frame}
 
-    \begin{frame}{\insertsubsection}
+    \begin{frame}
         観測したい物理量(位置、運動量、エネルギー)は実際に観測できるのだから実数であるはずだ。
         物理量$A$に対応する演算子を$\hat{A}$とすると、物理量$A$の期待値$\langle A \rangle$は
         \begin{equation}
@@ -161,7 +163,7 @@
         と求めることができる。
     \end{frame}
 
-    \begin{frame}{\insertsubsection}
+    \begin{frame}
         ここで、ハミルトニアン$\hat{H}$の期待値$\langle H \rangle$を求める。
 
         \begin{equation}
@@ -179,6 +181,27 @@
         つまり、
         \alert{ハミルトニアン$\hat{H}$の期待値$\langle H \rangle$はエネルギー$E$}である。
     \end{frame}
+
+    \section{モンテカルロ法}
+    \begin{frame}
+        \begin{itemize}
+            \item 数値計算を(擬似)乱数を用いて行う手法の総称。
+            \item 今回は数値積分
+            \item 高次元の数値積分に強いが次元の呪いがある。
+        \end{itemize}
+    \end{frame}
+
+    \subsection{当たり外れ法}
+
+
+
+    \section{変分モンテカルロ法}
+
+    \section{量子モンテカルロ法}
+
+    \section{拡散量子モンテカルロ法}
+
+
 
     % \end{frame}{\insertsubsection}
     %
