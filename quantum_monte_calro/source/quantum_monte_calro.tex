@@ -1,0 +1,187 @@
+\documentclass[dvipdfmx]{beamer}
+
+%Beamerの設定
+\usetheme{Boadilla}
+
+%Beamerフォント設定
+\usepackage{newtxtext,newtxmath} % TXフォント
+\usepackage{sfmath}
+\DeclareSymbolFont{operators}{OT1}{\sfdefault}{m}{n}
+\SetSymbolFont{operators}{bold}{OT1}{\sfdefault}{b}{n}
+\usefonttheme{structurebold} % タイトル部を太字
+\setbeamerfont{alerted text}{series=\bfseries} % Alertを太字
+\setbeamerfont{section in toc}{series=\mdseries} % 目次は太字にしない
+\setbeamerfont{frametitle}{size=\Large} % フレームタイトル文字サイズ
+\setbeamerfont{title}{size=\LARGE} % タイトル文字サイズ
+\setbeamerfont{date}{size=\small}  % 日付文字サイズ
+
+% Babel (日本語の場合のみ・英語の場合は不要)
+\uselanguage{japanese}
+\languagepath{japanese}
+\deftranslation[to=japanese]{Theorem}{定理}
+\deftranslation[to=japanese]{Lemma}{補題}
+\deftranslation[to=japanese]{Example}{例}
+\deftranslation[to=japanese]{Examples}{例}
+\deftranslation[to=japanese]{Definition}{定義}
+\deftranslation[to=japanese]{Definitions}{定義}
+\deftranslation[to=japanese]{Problem}{問題}
+\deftranslation[to=japanese]{Solution}{解}
+\deftranslation[to=japanese]{Fact}{事実}
+\deftranslation[to=japanese]{Proof}{証明}
+\def\proofname{証明}
+
+%Beamer色設定
+\definecolor{UniBlue}{RGB}{0,150,200}
+\definecolor{AlertOrange}{RGB}{255,76,0}
+\definecolor{AlmostBlack}{RGB}{38,38,38}
+\setbeamercolor{normal text}{fg=AlmostBlack}  % 本文カラー
+\setbeamercolor{structure}{fg=UniBlue} % 見出しカラー
+\setbeamercolor{block title}{fg=UniBlue!50!black} % ブロック部分タイトルカラー
+\setbeamercolor{alerted text}{fg=AlertOrange} % \alert 文字カラー
+\mode<beamer>{
+    \definecolor{BackGroundGray}{RGB}{254,254,254}
+    \setbeamercolor{background canvas}{bg=BackGroundGray} % スライドモードのみ背景をわずかにグレーにする
+}
+
+%フラットデザイン化
+\setbeamertemplate{blocks}[rounded] % Blockの影を消す
+\useinnertheme{circles} % 箇条書きをシンプルに
+\setbeamertemplate{navigation symbols}{} % ナビゲーションシンボルを消す
+\setbeamertemplate{footline}[frame number] % フッターはスライド番号のみ
+
+% section毎に目次の表示
+\AtBeginSection[]{
+    \begin{frame}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
+\title{量子モンテカルロ法}
+\author{齊藤}
+
+\begin{document}
+
+\maketitle
+\frame{\tableofcontents[hideallsubsections]}
+
+\section{量子力学　復習}
+\subsection{シュレディンガー方程式}
+
+\begin{frame}{\insertsubsection}
+    ポテンシャルが時間に依存する場合
+    \begin{block}{時間に依存するシュレディンガー方程式}
+        \begin{equation}
+            i\hbar\dfrac{\partial \Psi(x,t)}{\partial t} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,t)}{\partial x^2} + V(x,t)\Psi(x,t)
+        \end{equation}
+    \end{block}
+
+    時間に関して$1$階、位置に関して$2$階の偏微分方程式
+    \end{frame}
+
+    \begin{frame}{\insertsubsection}
+    ポテンシャルが時間に依存しない場合
+        \begin{equation}
+            i\hbar\dfrac{\partial \Psi(x,t)}{\partial t} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,t)}{\partial x^2} + V(x)\Psi(x,t)
+        \end{equation}
+    波動関数を時間と位置の関数の積として考えると
+
+        \begin{equation}
+            \Psi(x,t) = \psi(x)\phi(t)
+        \end{equation}
+    変数分離ができて、時間に関しては
+        \begin{equation}
+            \phi(t) = e^{-i\frac{E}{\hbar}t}
+        \end{equation}
+    位置に関しては
+    \begin{block}{時間に依存しないシュレディンガー方程式}
+        \begin{equation}
+            \left[-\dfrac{\hbar^2}{2m}\dfrac{d^2}{dx^2} + V(x)\right]\psi(x) = E\psi(x)
+        \end{equation}
+    \end{block}
+    \end{frame}
+
+    \begin{frame}{\insertsubsection}
+        \begin{block}{ハミルトニアン$\hat{H}$}
+            \begin{equation}
+                \hat{H} = -\dfrac{\hbar^2}{2m}\dfrac{d^2}{dx^2} + V(x)
+            \end{equation}
+        \end{block}
+
+        とすると、時間に依存しないシュレディンガー方程式は
+
+        \begin{block}{時間に依存しないシュレディンガー方程式}
+            \begin{equation}
+                \hat{H}\psi(x) = E\psi(x)
+            \end{equation}
+        \end{block}
+        つまり、
+        \alert{$\psi$はハミルトニアン$\hat{H}$の固有値$E$に対応する固有関数}
+
+    \end{frame}
+
+    \begin{frame}{\insertsubsection}
+        (時間に依存しない)シュレディンガー方程式を解くとは、
+
+        \alert{
+        ポテンシャル$V$によって変化するハミルトニアン$\hat{H}$の固有値$E$と対応する固有関数$\psi$を求める
+        }
+
+        ということ。(固有値問題)
+    \end{frame}
+
+    \subsection{物理量の観測}
+    \begin{frame}{\insertsubsection}
+
+        古典力学の世界では、ある時刻での粒子の位置と速度を与えると、全ての時刻での位置と運動量を完全に決定できる。
+        つまり、現在の粒子の情報がわかれば未来での粒子の情報を予言できる。$\mathcal{O}(h)$が無視できる。
+        \vfill
+        しかし、量子力学の世界では$\mathcal{O}(h)$が無視できないため、不確定性原理の影響が出てくる。
+        つまり、位置と運動量の両方を同時に決めることができない。
+        \vfill
+        粒子がどこに存在するのか、その分布を表すものが波動関数$\psi$の絶対値の$2$乗$|\psi|^2$である。
+        これを確率密度関数と呼び、正規化されていれば
+        \begin{equation}
+            \int_{-\infty}^\infty |\psi|^2 dx = 1
+        \end{equation}
+
+        % 波動関数$\psi$は直交関数系を成し、その絶対値の$2$乗$|\psi|^2$は$1$つの粒子の存在の確率密度を表す。
+        % $\psi$が規格化されていれば、
+        % \begin{equation}
+        %     \int_{-\infty}^\infty |\psi|^2 dx = 1
+        % \end{equation}
+
+    \end{frame}
+
+    \begin{frame}{\insertsubsection}
+        観測したい物理量(位置、運動量、エネルギー)は実際に観測できるのだから実数であるはずだ。
+        物理量$A$に対応する演算子を$\hat{A}$とすると、物理量$A$の期待値$\langle A \rangle$は
+        \begin{equation}
+            \langle A \rangle = \int \psi^*(x) \hat{A} \psi(x) dx
+        \end{equation}
+        と求めることができる。
+    \end{frame}
+
+    \begin{frame}{\insertsubsection}
+        ここで、ハミルトニアン$\hat{H}$の期待値$\langle H \rangle$を求める。
+
+        \begin{equation}
+            \langle H \rangle = \int_{-\infty}^\infty \psi^*(x) \hat{H} \psi(x) dx
+        \end{equation}
+        時間に依存しないシュレディンガー方程式$\hat{H}\psi = E\psi$より
+        \begin{equation}
+            \langle H \rangle = \int_{-\infty}^\infty \psi^*(x) E \psi(x) dx
+        \end{equation}
+        $E$は定数なので、
+        \begin{equation}
+            \langle H \rangle = E\int_{-\infty}^\infty \psi^*(x)\psi(x) dx = E
+        \end{equation}
+        となる。
+        つまり、
+        \alert{ハミルトニアン$\hat{H}$の期待値$\langle H \rangle$はエネルギー$E$}である。
+    \end{frame}
+
+    % \end{frame}{\insertsubsection}
+    %
+    % \begin{frame}
+
+\end{document}
