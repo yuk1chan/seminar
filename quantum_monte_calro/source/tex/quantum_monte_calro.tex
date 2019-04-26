@@ -66,7 +66,7 @@
 \frame{\tableofcontents[hideallsubsections]}
 
 \section{目的}
-\begin{frame}
+\begin{frame}{目的}
     シュレディンガー方程式を解いて、調和振動子ポテンシャルや水素原子などの基底状態・励起状態のエネルギーを求めたい。
 
 \end{frame}
@@ -391,19 +391,6 @@
         $x_i$は確率密度関数$\Psi^2$によって定義される分布によって従う乱数列である。
     \end{frame}
 
-    %
-    % \section{拡散方程式}
-    % \begin{frame}
-    %     \begin{block}{拡散方程式}
-    %         \begin{equation}
-    %             \dfrac{\partial f(x,t)}{\partial t} = D \dfrac{\partial^2 f(x,t)}{\partial x^2}
-    %         \end{equation}
-    %         $D$は拡散係数
-    %     \end{block}
-    % \end{frame}
-
-
-
     \section{シュレディンガー方程式と拡散方程式}
 
     \begin{frame}
@@ -616,6 +603,8 @@
                 ~~~~その粒子を取り除く。
 
                 (分岐過程に対応)
+
+                END IF
             \end{itemize}
 
         \end{enumerate}
@@ -638,9 +627,5 @@
 
         また、$N$は上記$2$によって増減した後の粒子数であり、$a$は粒子数$N$が一定になるように調整するためのパラメーターである。
     \end{frame}
-
-    % \end{frame}{\insertsubsection}
-    %
-    % \begin{frame}
 
 \end{document}
