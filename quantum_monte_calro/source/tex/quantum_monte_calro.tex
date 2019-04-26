@@ -4,7 +4,6 @@
 % \usetheme{Boadilla}
 \usetheme{Antibes}
 
-
 %Beamerフォント設定
 \usepackage{newtxtext,newtxmath} % TXフォント
 \usepackage{sfmath}
@@ -58,7 +57,7 @@
     \end{frame}
 }
 
-\title{量子モンテカルロ法}
+\title{量子力学とモンテカルロ法}
 \author{齊藤}
 
 \begin{document}
@@ -66,10 +65,16 @@
 \maketitle
 \frame{\tableofcontents[hideallsubsections]}
 
+\section{目的}
+\begin{frame}
+    シュレディンガー方程式を解いて、調和振動子ポテンシャルや水素原子などの基底状態・励起状態のエネルギーを求めたい。
+
+\end{frame}
+
+
 \section{量子力学　復習}
 \subsection{シュレディンガー方程式}
-
-\begin{frame}
+\begin{frame}{\insertsubsection}
     ポテンシャルが時間に依存する場合
     \begin{block}{時間に依存するシュレディンガー方程式}
         \begin{equation}
@@ -132,7 +137,7 @@
     \end{frame}
 
     \subsection{物理量の観測}
-    \begin{frame}
+    \begin{frame}{\insertsubsection}
 
         古典力学の世界では、ある時刻での粒子の位置と速度を与えると、全ての時刻での位置と運動量を完全に決定できる。
         つまり、現在の粒子の情報がわかれば未来での粒子の情報を予言できる。$\mathcal{O}(h)$が無視できる。
@@ -187,21 +192,452 @@
         \begin{itemize}
             \item 数値計算を(擬似)乱数を用いて行う手法の総称。
             \item 今回は数値積分
-            \item 高次元の数値積分に強いが次元の呪いがある。
+            % \item 高次元の数値積分に強いが次元の呪いがある。
         \end{itemize}
     \end{frame}
 
     \subsection{当たり外れ法}
+    \begin{frame}{\insertsubsection}
+        面積が不等式で評価されるような場合に有効
+        \begin{example}
+            \begin{equation}
+                x^2 + y^2 -1 < 0
+            \end{equation}
+            で評価される面積
+        \end{example}
 
+        \begin{figure}
+            \includegraphics[width=70mm]{../fig/monte1.png}
+            % \caption{}
+            % \label{}
+        \end{figure}
+    \end{frame}
 
+    \subsection{標本平均法}
+    \begin{frame}{\insertsubsection}
+        \begin{Theorem}[積分の平均値の定理]
+            関数$f(x)$が区間$[a,b]$で連続かつ微分可能であれば
+            \begin{equation}
+                \dfrac{1}{b-a}\int_a^b f(x) dx = f(k)
+            \end{equation}
+            となるような$k,(a\leq k \leq b)$が存在する。
+        \end{Theorem}
+        これより、区間$[a,b]$の乱数列を$x_i$とすると
+        \begin{equation}
+            \dfrac{1}{b-a}\int_a^b f(x) dx = \lim_{n\to\infty}\dfrac{1}{n}\sum_{i=0}^n f(x_i)
+        \end{equation}
+        このように積分できる。
+    \end{frame}
+
+    \begin{frame}
+        \begin{example}
+            \begin{equation}
+                4\int_0^1 \sqrt{1-x^2} dx
+            \end{equation}
+        \end{example}
+
+        \begin{figure}
+            \includegraphics[width=70mm]{../fig/monte2.png}
+            % \caption{}
+            % \label{}
+        \end{figure}
+    \end{frame}
+
+    \subsection{一般的な話}
+    \begin{frame}{\insertsubsection}
+
+        \begin{itemize}
+            \item 標本空間を$\Omega \subset \mathbb{R}^d$
+            \item 確率密度関数を$p(x)$
+        \end{itemize}
+
+        として、関数$f(x)$の期待値$E[f(x)]$を考える。
+
+        これは、
+        \begin{equation}
+            E[f(x)] = \int_\Omega f(x)p(x) dx
+        \end{equation}
+        で計算できる。
+
+    \end{frame}
+
+    \begin{frame}
+        確率密度関数$p(x)$によって定義される確率分布に従って生成される乱数列を$x_i$とすると期待値$E[f(x)]$は
+        \begin{equation}
+            E[f(x)] = \lim_{n \to \infty}\dfrac{1}{n}\sum_{i=1}^n f(x_i)
+        \end{equation}
+
+        と計算できる。
+        つまり、
+        \begin{equation}
+            E[f(x)] = \int_\Omega f(x)p(x) dx = \lim_{n \to \infty}\dfrac{1}{n}\sum_{i=1}^n f(x_i)
+        \end{equation}
+
+    \end{frame}
+
+    \subsection{具体例}
+    \begin{frame}{\insertsubsection}
+        $1$次元で具体例を考えてみる。
+
+        \begin{itemize}
+            \item 標本空間を$[a,b]$
+            \item 確率変数を$x \in [a,b]$
+            \item $[a,b]$で一様分布の確率密度関数は$p(x) = \frac{1}{b-a}$
+        \end{itemize}
+
+        関数$f(x)$の期待値$E[f(x)]$は
+
+        \begin{equation}
+            E[f(x)] = \dfrac{1}{b-a}\int_a^b f(x) dx = \lim_{n\to\infty}\dfrac{1}{n}\sum_{i=0}^n f(x_i)
+        \end{equation}
+
+        \alert{標本平均法に一致する！}
+
+    \end{frame}
+
+    \subsection{誤差解析}
+    \begin{frame}{\insertsubsection}
+
+        \begin{itemize}
+            \item $f(x_1),f(x_2),\cdots,f(x_N)$を平均$\mu$、分散$\sigma^2$の母集団からの無作為標本
+            \item 標本平均$\bar{f} = \dfrac{1}{N} \sum_{i=1}^{N}f(x_i)$
+            \item 標本平均の分散$V[\bar{f}] = \dfrac{1}{N}\sum_{i=1}^{N} V[\bar{f_i}] = \dfrac{\sigma^2}{N}$
+            \item 標本偏差 $ = \dfrac{\sigma}{\sqrt{N}}$
+        \end{itemize}
+
+        つまり、
+        \alert{母集団の偏差$\sigma$がどうであれ、$N$を十分大きくすれば標本偏差を小さくすることができる。}
+        また、\alert{$\sigma$を小さくできれば同じ$N$でも誤差が小さい。}
+
+    \end{frame}
+
+    \begin{frame}
+        標本偏差$\sigma$を小さくするために、
+        \begin{itemize}
+            \item 重み付き標本抽出
+            \item マルコフ連鎖
+                \begin{itemize}
+                    \item メトロポリス・ヘイスティング法
+                    \item ギブスサンプリング
+                \end{itemize}
+        \end{itemize}
+        などがある。
+    \end{frame}
+
+    \section{変分法}
+    \begin{frame}
+        ハミルトニアン$\hat{H}$の期待値$\langle H \rangle$
+        \begin{equation}
+            \langle H \rangle = \int_{-\infty}^\infty \psi^*(x) \hat{H} \psi(x) dx
+        \end{equation}
+        を計算したい。
+
+        しかし、$\psi(x)$は未知の関数。
+    \end{frame}
+
+    \begin{frame}
+        試行関数$\psi_{trial}(x,a)$というものを用意する。
+
+        パラメーター$a$によって関数が変化する。
+
+        \begin{equation}
+            \int_{-\infty}^\infty \psi_{trial}^*(x,a) \hat{H} \psi_{trial}(x,a) dx = E(a)
+        \end{equation}
+
+        エネルギー$E$がパラメーター$a$によって変化する。
+
+        $E(a)$の極値を$E'$、基底状態のエネルギーを$E_0$とすると、
+
+        \begin{equation}
+            E' \geq E_0
+        \end{equation}
+
+        が成立する。(変分原理)
+
+        このように、\alert{$E(a)$の極値を求めることで、基底状態のエネルギーを近似的に求めることができる。}
+
+        ただし、試行関数$\psi_{trial}$をいい感じに選ぶ必要がある。
+
+    \end{frame}
 
     \section{変分モンテカルロ法}
+    \begin{frame}
+        試行関数を$\Psi_{tiral}(x,a)$、基底状態のエネルギーを$E_0$とすると、変分原理より
+        \begin{equation}
+            \langle H \rangle = E[\Psi] = \dfrac{\int\Psi^* \hat{H} \Psi dx}{\int \Psi^* \Psi dx} \geq E_0
+        \end{equation}
 
-    \section{量子モンテカルロ法}
+        パラメーター$a$を変化させて数値積分をして得られる$E[\Psi]$が最小となるものを見つける。
+        \vfill
+        この数値積分が応用上多次元になるのでモンテカルロ法を用いる。
+        \vfill
+        束縛状態では$\Psi^* = \Psi$と考えて良い。
+    \end{frame}
+
+    \begin{frame}
+        重み付き標本抽出を使える形にする。
+        \begin{equation}
+            E[\Psi] = \dfrac{\int \Psi^2(x) E_L(x) dx}{\int \Psi^2(x) dx}
+        \end{equation}
+        ここで、$E_L$は局所エネルギー
+        \begin{equation}
+            E_L = \dfrac{\hat{H}\Psi(x)}{\Psi(x)}
+        \end{equation}
+        これを用いることで、
+        \begin{equation}
+            E[\Psi] = \lim_{n\to\infty}\dfrac{1}{n}\sum_{i=1}^n E_L(x_i)
+        \end{equation}
+
+        $x_i$は確率密度関数$\Psi^2$によって定義される分布によって従う乱数列である。
+    \end{frame}
+
+    %
+    % \section{拡散方程式}
+    % \begin{frame}
+    %     \begin{block}{拡散方程式}
+    %         \begin{equation}
+    %             \dfrac{\partial f(x,t)}{\partial t} = D \dfrac{\partial^2 f(x,t)}{\partial x^2}
+    %         \end{equation}
+    %         $D$は拡散係数
+    %     \end{block}
+    % \end{frame}
+
+
+
+    \section{シュレディンガー方程式と拡散方程式}
+
+    \begin{frame}
+        シュレディンガー方程式
+        \begin{equation}
+            i\hbar\dfrac{\partial \Psi(x,t)}{\partial t} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,t)}{\partial x^2} + V(x)\Psi(x,t)
+        \end{equation}
+
+        $\tau = \dfrac{it}{\hbar}$と変数変換すると、
+
+        \begin{block}{虚時間のシュレディンガー方程式}
+            \begin{equation}
+                \label{tmp1}
+        \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,\tau)}{\partial x^2} - V(x)\Psi(x,\tau)
+            \end{equation}
+        \end{block}
+        これと、
+        \begin{block}{拡散方程式}
+            \begin{equation}
+                \dfrac{\partial f(x,t)}{\partial t} = D \dfrac{\partial^2 f(x,t)}{\partial x^2}
+            \end{equation}
+        \end{block}
+        似ていることがわかる。
+    \end{frame}
+
+    \begin{frame}
+
+        \begin{block}{虚時間のシュレディンガー方程式}
+            \begin{equation}
+                \label{tmp1}
+        \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,\tau)}{\partial x^2} - V(x)\Psi(x,\tau)
+            \end{equation}
+        \end{block}
+
+        \begin{itemize}
+            \item 右辺第$1$項は粒子の拡散 (拡散過程)
+            \item 右辺第$2$項はポテンシャル$V$の符号によって粒子が増減(分岐過程)
+        \end{itemize}
+
+        を表している。
+
+        つまり、
+        \alert{シュレディンガー方程式を虚時間に発展する拡散方程式と見て解くことができる。}
+    \end{frame}
+
+
+    \section{ランダムウォーク量子モンテカルロ法}
+    \begin{frame}{準備}
+        拡散方程式を解く方法の$1$つにランダムウォークを用いる方法がある。
+        粒子を空間上に配置し、粒子をランダムに移動(拡散)させることで、系の状態を定常状態にしていく。つまり、基底状態のエネルギー$E_0$を求めることができる。
+        \vfill
+        しかし、(\ref{tmp1})の右辺第$2$項の影響で粒子が激しく増加または減少してしまう。粒子数を一定にするために、$V_{ref}$という参照ポテンシャルを用意し、これを用いて系のエネルギーを求める。
+    \end{frame}
+
+    \begin{frame}{アルゴリズム}
+        \begin{enumerate}
+            \item 初期化
+            \begin{itemize}
+                \item $N_0$個の粒子を初期値$x_i$にランダムに置く。
+                \item $V_{ave} = V_{ref} = \frac{1}{N_0} \sum_{i=1}^{N_0}V(x_i)$ を計算。
+            \end{itemize}
+            \item 全ての粒子について
+            \begin{itemize}
+                \item 参照エネルギー
+                $V_{ref} = \frac{1}{N_0}\sum_{i=1}^{N_0}V(x[i])$
+                を計算。
+                \item 粒子をランダムに$\Delta s$だけ移動(拡散)させる。
+
+                $x[i] = x[i] \pm \Delta s$
+
+                \item $\Delta V = V(x_i) - V_{ref}$を計算。
+                $r$を単位区間$[0,1]$の乱数とする。
+
+                IF $\Delta V > 0$ and $r < \Delta V \Delta \tau$
+
+                ~~~~ その粒子を取り除く。
+
+                ELSE IF $\Delta V < 0$ and $r < -\Delta V \Delta \tau$
+
+                ~~~~ 粒子を$1$個同じ位置に追加する。
+
+                END IF
+            \end{itemize}
+
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}
+        \begin{enumerate}
+            \setcounter{enumi}{2}
+            \item $V_{ave}$と$V_{ref}$の更新
+
+            $V_{ave} = \frac{1}{N}\sum_{i=1}^{N}V(x_i)$
+
+            $V_{ref} = V_{ave} - \frac{a}{N_0\Delta\tau}(N-N_0)$
+
+            \item 上記$2$と$3$が$V_{ave}$がある値で不規則なゆらぎを示すまで繰り返す。
+
+            \item $V_{ave}$の平均を取ることで基底状態のエネルギーを求めることができる。
+        \end{enumerate}
+        ここで、$\hbar = m = 1$という単位系を採用し、
+        $(\Delta s)^2 = 2D\Delta \tau~(\tau \ll 1)$
+
+        また、$N$は上記$2$によって増減した後の粒子数であり、$a$は粒子数$N$が一定になるように調整するためのパラメーターである。
+    \end{frame}
 
     \section{拡散量子モンテカルロ法}
+    \begin{frame}{準備}
+        \begin{block}{グリーン関数$G(x',x,\tau)$}
+            \begin{equation}
+                \Psi(x',\tau) = \int G(x',x,\tau)\Psi(x,0)dx
+            \end{equation}
+        \end{block}
 
+        $\Psi$を時刻$0$から時刻$\tau$へ伝播させる。
 
+        \begin{equation}
+            \label{tmp2}
+            \dfrac{\partial G}{\partial \tau} = -(\hat{H} - V_{ref})G
+        \end{equation}
+        や
+        \begin{equation}
+            G(x',x,\tau) = G(x,x',\tau)
+        \end{equation}
+        を満たす。
+    \end{frame}
+
+    \begin{frame}
+        (\ref{tmp2})の形式解は
+        \begin{equation}
+            G(\tau) = e^{-(\hat{H} - V_{ref})\tau}
+        \end{equation}
+        演算子の指数関数は、そのテイラー展開を意味する。
+
+        というのも、量子力学において演算子は無限次元のベクトル(波動関数)に作用する無限次元の行列と考えられるため。
+        (ハイゼンベルグが考えた行列力学というものがある。)
+
+        \begin{block}{行列の指数関数}
+            \begin{equation}
+                e^A = \sum_{k=0}^\infty \dfrac{1}{k!}A^k
+            \end{equation}
+        \end{block}
+    \end{frame}
+
+    \begin{frame}
+        $\hat{H}$の中にある運動エネルギー演算子$\hat{T}(=\frac{\hat{p}^2}{2m},\hat{p} = -i\hbar\frac{\partial}{\partial x})$
+        とポテンシャルエネルギー演算子$\hat{V}$が互いに非可換であるため、演算子の指数関数の計算が困難。
+
+        そのため
+        \begin{block}{鈴木・トロッターの分解公式}
+            \begin{align}
+                G_{diff} &= e^{-\hat{T}\Delta\tau} \\
+                G_{branch/2} &= e^{-\frac{1}{2}(\hat{T} - V_{ref})\Delta\tau} \\
+                G(\tau) &= G_{branch/2}G_{diff}G_{branch/2}
+            \end{align}
+        \end{block}
+        を用いる。
+
+        $G_{diff}$が拡散過程、$G_{branch/2}$が分岐過程を表す。
+
+        つまり、$G$は分岐$\to$拡散$\to$分岐の流れを表している。
+    \end{frame}
+
+    \begin{frame}
+        $G_{diff}$は
+        \begin{equation}
+            \dfrac{\partial G_{diff}}{\partial \tau} = - \hat{T}G_{diff} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 G_{diff}}{\partial x^2}
+        \end{equation}
+        $G_{branch/2}$は
+        \begin{equation}
+            \dfrac{\partial G_{branch/2}}{\partial \tau} = -\dfrac{1}{2}(\hat{V} - V_{ref})G_{branch/2}
+        \end{equation}
+        の微分方程式を満たす。
+
+        これらの解は
+
+        \begin{align}
+            G_{diff}(x',x,\Delta\tau) &= \dfrac{1}{\sqrt{4\pi D\Delta\tau}}
+            e^{-\frac{(x'-x)^2}{4D\Delta\tau}} \\
+            G_{branch/2}(x',x,\Delta\tau) &= e^{-(\frac{1}{2}[V(x)+V(x')]-V_{ref})\Delta\tau}
+        \end{align}
+        ただし、$D=\dfrac{\hbar^2}{2m}$である。
+    \end{frame}
+
+    \begin{frame}{アルゴリズム}
+        \begin{enumerate}
+            \item 初期化
+            \begin{itemize}
+                \item $N_0$個の粒子を初期値$x_i$にランダムに置く。
+                \item $V_{ave} = V_{ref} = \frac{1}{N_0} \sum_{i=1}^{N_0}V(x_i)$ を計算。
+            \end{itemize}
+
+            \item 全ての粒子について
+            \begin{itemize}
+                \item 分散$2D\tau$、平均$0$のガウス分布から乱数$r$を生成する。
+                \item $x_i = x_i + r$と位置を更新する。($G_{diff}$による拡散過程に対応)
+                \item $w(x\to x',\tau) = e^{-(\frac{1}{2}[V(x)+V(x')]-V_{ref})\Delta\tau}$を計算する。
+                \item 単位区間$[0,1]$から乱数$r$を生成する。$w+r$の整数部分を$w'$とする。
+
+                IF $w' > 1$
+
+                ~~~~粒子を$w'-1$個同じ位置に追加する。
+
+                ELSE IF $w' == 1$
+
+                ~~~~粒子数に変化なし。
+
+                ELSE
+
+                ~~~~その粒子を取り除く。
+
+                (分岐過程に対応)
+            \end{itemize}
+
+        \end{enumerate}
+
+    \end{frame}
+
+    \begin{frame}
+        \begin{enumerate}
+            \setcounter{enumi}{2}
+            \item $V_{ave}$と$V_{ref}$の更新
+
+            $V_{ave} = \frac{1}{N}\sum_{i=1}^{N}V(x_i)$
+
+            $V_{ref} = V_{ave} - \frac{a}{N_0\Delta\tau}(N-N_0)$
+
+            \item 上記$2$と$3$を繰り返し、$V_{ave}$の平均を取ることで基底状態のエネルギーを求めることができる。
+        \end{enumerate}
+        同様に、$\hbar = m = 1$という単位系を採用し、
+        $(\Delta s)^2 = 2D\Delta \tau~(\tau \ll 1)$
+
+        また、$N$は上記$2$によって増減した後の粒子数であり、$a$は粒子数$N$が一定になるように調整するためのパラメーターである。
+    \end{frame}
 
     % \end{frame}{\insertsubsection}
     %
