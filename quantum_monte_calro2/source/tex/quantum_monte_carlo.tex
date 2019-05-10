@@ -1,0 +1,608 @@
+\documentclass[dvipdfmx]{beamer}
+
+%Beamerの設定
+% \usetheme{Boadilla}
+\usetheme{Antibes}
+
+\usepackage{comment}
+
+%Beamerフォント設定
+\usepackage{newtxtext,newtxmath} % TXフォント
+\usepackage{sfmath}
+\DeclareSymbolFont{operators}{OT1}{\sfdefault}{m}{n}
+\SetSymbolFont{operators}{bold}{OT1}{\sfdefault}{b}{n}
+\usefonttheme{structurebold} % タイトル部を太字
+\setbeamerfont{alerted text}{series=\bfseries} % Alertを太字
+\setbeamerfont{section in toc}{series=\mdseries} % 目次は太字にしない
+\setbeamerfont{frametitle}{size=\Large} % フレームタイトル文字サイズ
+\setbeamerfont{title}{size=\LARGE} % タイトル文字サイズ
+\setbeamerfont{date}{size=\small}  % 日付文字サイズ
+
+% Babel (日本語の場合のみ・英語の場合は不要)
+\uselanguage{japanese}
+\languagepath{japanese}
+\deftranslation[to=japanese]{Theorem}{定理}
+\deftranslation[to=japanese]{Lemma}{補題}
+\deftranslation[to=japanese]{Example}{例}
+\deftranslation[to=japanese]{Examples}{例}
+\deftranslation[to=japanese]{Definition}{定義}
+\deftranslation[to=japanese]{Definitions}{定義}
+\deftranslation[to=japanese]{Problem}{問題}
+\deftranslation[to=japanese]{Solution}{解}
+\deftranslation[to=japanese]{Fact}{事実}
+\deftranslation[to=japanese]{Proof}{証明}
+\def\proofname{証明}
+
+%Beamer色設定
+\definecolor{UniBlue}{RGB}{0,150,200}
+\definecolor{AlertOrange}{RGB}{255,76,0}
+\definecolor{AlmostBlack}{RGB}{38,38,38}
+\setbeamercolor{normal text}{fg=AlmostBlack}  % 本文カラー
+\setbeamercolor{structure}{fg=UniBlue} % 見出しカラー
+% \setbeamercolor{block title}{fg=UniBlue!50!black} % ブロック部分タイトルカラー
+\setbeamercolor{alerted text}{fg=AlertOrange} % \alert 文字カラー
+\mode<beamer>{
+    \definecolor{BackGroundGray}{RGB}{254,254,254}
+    \setbeamercolor{background canvas}{bg=BackGroundGray} % スライドモードのみ背景をわずかにグレーにする
+}
+
+%フラットデザイン化
+\setbeamertemplate{blocks}[rounded] % Blockの影を消す
+\useinnertheme{circles} % 箇条書きをシンプルに
+\setbeamertemplate{navigation symbols}{} % ナビゲーションシンボルを消す
+\setbeamertemplate{footline}[frame number] % フッターはスライド番号のみ
+
+% section毎に目次の表示
+\AtBeginSection[]{
+    \begin{frame}
+        \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+    \end{frame}
+}
+
+\title{量子モンテカルロ法}
+\author{齊藤}
+
+\begin{document}
+
+\maketitle
+\frame{\tableofcontents[hideallsubsections]}
+
+\section{目的}
+\begin{frame}{目的}
+    シュレディンガー方程式を解いて、調和振動子ポテンシャルや水素原子などの基底状態・励起状態のエネルギーを求めたい。
+
+\end{frame}
+
+    \section{シュレディンガー方程式と拡散方程式}
+
+    \begin{frame}
+      \begin{block}{シュレディンガー方程式}
+
+        \begin{equation}
+            i\hbar\dfrac{\partial \Psi(x,t)}{\partial t} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,t)}{\partial x^2} + V(x)\Psi(x,t)
+        \end{equation}
+
+      \end{block}
+
+        $\tau = \dfrac{it}{\hbar}$と変数変換すると、
+
+        \begin{block}{虚時間のシュレディンガー方程式}
+            \begin{equation}
+                \label{tmp1}
+        \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,\tau)}{\partial x^2} - V(x)\Psi(x,\tau)
+            \end{equation}
+        \end{block}
+        これは、
+        \begin{block}{拡散方程式}
+            \begin{equation}
+                \dfrac{\partial f(x,t)}{\partial t} = D \dfrac{\partial^2 f(x,t)}{\partial x^2}
+                ,~~~~D = \frac{\Delta x^2}{2\Delta t}
+            \end{equation}
+        \end{block}
+        似ていることがわかる。
+
+        \alert{拡散方程式を解く手法が使えそう。}
+    \end{frame}
+
+    \begin{frame}
+      拡散方程式を解く手法の一つであるランダムウォークを用いる。
+      \begin{block}{ランダムウォーク}
+          粒子を空間上に配置し、粒子をランダムに動かすことで系の状態を発展させ、定常状態にする。
+
+          $\to$ 定常状態のエネルギーを求める。
+      \end{block}
+
+      \begin{exampleblock}{例:室温}
+        空気中の分子が温度によってランダムに動くことによって、熱が拡散していく。
+
+        $\to$ 十分に拡散すると最終的に室温は一定になる。(定常状態)
+      \end{exampleblock}
+
+    \end{frame}
+
+    \begin{frame}
+      式を観察すると、
+        \begin{block}{虚時間のシュレディンガー方程式}
+            \begin{equation}
+                \label{tmp1}
+        \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,\tau)}{\partial x^2} - V(x)\Psi(x,\tau) \nonumber
+            \end{equation}
+        \end{block}
+
+        \begin{itemize}
+            \item 右辺第$1$項は粒子の拡散 (拡散過程)
+            \item 右辺第$2$項はポテンシャル$V$の符号によって粒子が増減(分岐過程)
+        \end{itemize}
+
+        を表している。
+
+    \end{frame}
+
+    \section{ランダムウォーク量子モンテカルロ法}
+
+    \subsection{準備}
+    \begin{frame}{\insertsubsection}
+      シュレディンガー方程式の一般解は虚時間に対して、
+      \begin{equation}
+        \Psi(x,\tau) = \sum_{n=0}^\infty c_n \phi_n(x) e^{-E_n\tau}
+      \end{equation}
+      ここで、エネルギーは
+      \begin{equation}
+        E_0 \leq E_1 \leq E_2 \leq \cdots
+      \end{equation}
+      なので、$\tau \to \infty$では$c_0$の項が支配的になる。
+      \begin{equation}
+        \label{tmp2}
+        \Psi(x,\tau\to\infty) \approx c_0 \phi_0(x) e^{-E_0\tau}
+      \end{equation}
+      しかし、$E_0 \neq 0$なので、$\tau\to\infty$で$\Psi$が$0$もしくは$\infty$になってしまう。
+      $\to$ とてもまずい。
+    \end{frame}
+
+
+    \begin{frame}
+        $E_0 - V_{ref} \approx 0$になるような$V_{ref}$を用意する。
+
+        すると、$V(x) \to V(x)-V_{ref}$とシフトするので
+
+        (\ref{tmp1})は
+        \begin{equation}
+          \label{tmp3}
+          \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 \Psi(x,\tau)}{\partial x^2} - [V(x)-V_{ref}]\Psi(x,\tau)
+        \end{equation}
+
+        (\ref{tmp2})は
+        \begin{equation}
+          \label{tmp4}
+          \Psi(x,\tau\to\infty) \approx c_0 \phi_0(x) e^{-(E_0-V_{ref})\tau}
+        \end{equation}
+
+        となる。
+
+    \end{frame}
+
+    \begin{frame}
+      (\ref{tmp3})の両辺を$x$で積分する。$\frac{\partial\Psi}{\partial x}$は$|x|\to\infty$で消えるので
+      $\int \frac{\partial^2\Psi}{\partial x^2} dx = 0$より、
+      \begin{equation}
+        \label{tmp5}
+        \int \frac{\partial\Psi(x,\tau)}{\partial \tau} dx = -\int V(x)\Psi(x,\tau)dx + V_{ref}\int \Psi(x,\tau)dx
+      \end{equation}
+      (\ref{tmp4})を$\tau$で微分すると、
+      \begin{equation}
+        \label{tmp6}
+        \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = -(E_0 - V_{ref})\Psi(x,\tau)
+      \end{equation}
+      (\ref{tmp6})を(\ref{tmp5})に代入すると、
+      \begin{equation}
+        E_0 = \dfrac{\int V(x) \Psi(x,\tau) dx}{\int \Psi(x,\tau) dx}
+      \end{equation}
+      を得る。
+    \end{frame}
+    \begin{frame}
+      ここで、$\Psi(x,\tau)dx$と点$x$での粒子の密度を関係付ける。
+
+      時刻$\tau$で位置$x_i$に存在する粒子の数を$n_i$とすれば
+      \begin{equation}
+        E_0 = \langle V \rangle =  \dfrac{\sum_{i} n_i V(x_i)}{\sum_{i} n_i}
+      \end{equation}
+      つまり、全粒子数を$N$とすると、
+      \begin{equation}
+          E_0 = \langle V \rangle = \frac{1}{N}\sum_{i} n_i V(x_i)
+      \end{equation}
+      となる。
+
+    \end{frame}
+
+
+    \subsection{アルゴリズム}
+
+    \begin{frame}{\insertsubsection}
+        \begin{enumerate}
+            \item 初期化
+            \begin{itemize}
+                \item $N_0$個の粒子を初期値$x_i$にランダムに置く。
+                \item $V_{ave} = V_{ref} = \frac{1}{N_0} \sum_{i=1}^{N_0}V(x_i)$ を計算。
+            \end{itemize}
+            \item 全ての粒子について
+            \begin{itemize}
+                \item 参照エネルギー
+                $V_{ref} = \frac{1}{N_0}\sum_{i=1}^{N_0}V(x[i])$
+                を計算。
+                \item 粒子をランダムに$\Delta s$だけ移動(拡散)させる。
+
+                $x[i] = x[i] \pm \Delta s$
+
+                \item $\Delta V = V(x_i) - V_{ref}$を計算。
+                $r$を単位区間$[0,1]$の乱数とする。
+
+                IF $\Delta V > 0$ and $r < \Delta V \Delta \tau$
+
+                ~~~~ その粒子を取り除く。
+
+                ELSE IF $\Delta V < 0$ and $r < -\Delta V \Delta \tau$
+
+                ~~~~ 粒子を$1$個同じ位置に追加する。
+
+                END IF
+            \end{itemize}
+
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}
+        \begin{enumerate}
+            \setcounter{enumi}{2}
+            \item $V_{ave}$と$V_{ref}$の更新
+
+            $V_{ave} = \frac{1}{N}\sum_{i} n_i V(x_i)$
+
+            $V_{ref} = V_{ave} - \frac{a}{N_0\Delta\tau}(N-N_0)$
+
+            \item 上記$2$と$3$が$V_{ave}$がある値で不規則なゆらぎを示すまで繰り返す。
+
+            \item $V_{ave}$の平均を取ることで基底状態のエネルギーを求めることができる。
+        \end{enumerate}
+        ここで、$\hbar = m = 1$という単位系を採用し、
+        $(\Delta s)^2 = 2D\Delta \tau~(\tau \ll 1)$
+
+        また、$N$は上記$2$によって増減した後の粒子数であり、$a$は粒子数$N$が一定になるように調整するためのパラメーターである。
+    \end{frame}
+
+
+
+
+    \section{拡散量子モンテカルロ法1}
+    \subsection{準備}
+    \begin{frame}{\insertsubsection}
+      ハミルトニアン$\hat{H}$を$V_{ref}$だけシフトさせておくと
+      \begin{equation}
+        \hat{H} - V_{ref} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2}{\partial x^2} + V(x) - V_{ref}
+      \end{equation}
+      \begin{block}{虚時間のシュレディンガー方程式}
+          \begin{equation}
+              \label{tmp7}
+      \dfrac{\partial \Psi(x,\tau)}{\partial \tau} = -(\hat{H}-V_{ref})\Psi(x,\tau) \nonumber
+          \end{equation}
+      \end{block}
+
+      これの解は形式的に
+      \begin{equation}
+        \Psi(x,\tau) = e^{-(\hat{H}-V_{ref})\tau}\Psi(x,0)
+      \end{equation}
+      となる。
+
+      つまり、$e^{-(\hat{H}-V_{ref})\tau}$が波動関数に作用することで時間を$\tau$だけ進めることがわかる。
+
+    \end{frame}
+
+    \begin{frame}
+        この$e^{-(\hat{H}-V_{ref})\tau}$をGreen関数(伝達関数)と呼び、$G(\tau) = e^{-(\hat{H}-V_{ref})\tau}$とかく。
+
+        演算子の指数関数は、行列の指数関数を意味する。
+
+        というのも、量子力学において演算子は無限次元のベクトル(波動関数)に作用する無限次元の行列と考えられるため。
+        \begin{block}{行列の指数関数}
+            \begin{equation}
+                e^A = \sum_{k=0}^\infty \dfrac{1}{k!}A^k = E + A + \frac{A^2}{2!} + \frac{A^3}{3!} + \cdots
+            \end{equation}
+        \end{block}
+
+
+      \end{frame}
+
+      \begin{frame}
+
+        また、$G$は
+        \begin{equation}
+          \Psi(x',\tau) = \int G(x',x,\tau)\Psi(x,0) dx
+        \end{equation}
+        とも定義される。
+        \begin{equation}
+            G(x',x,\tau) = G(x,x',\tau)
+        \end{equation}
+        を満たす。(位置について対称)
+      \end{frame}
+
+    \begin{frame}
+        $\hat{H}$の中にある運動エネルギー演算子$\hat{T}(=\frac{\hat{p}^2}{2m},\hat{p} = -i\hbar\frac{\partial}{\partial x})$
+        とポテンシャルエネルギー演算子$\hat{V} = \frac{V(x') + V(x)}{2}$が互いに非可換であるため、演算子の指数関数の計算が困難。
+
+        そのため
+        \begin{block}{鈴木・トロッターの分解公式}
+            \begin{align}
+                G_{diff} &= e^{-\hat{T}\Delta\tau} \\
+                G_{branch/2} &= e^{-\frac{1}{2}(\hat{V} - V_{ref})\Delta\tau} \\
+                G(\tau) &= G_{branch/2}G_{diff}G_{branch/2}
+            \end{align}
+        \end{block}
+        を用いる。
+
+        $G_{diff}$が拡散過程、$G_{branch/2}$が分岐過程を表す。
+
+        つまり、$G$は分岐$\to$拡散$\to$分岐の流れを表している。
+    \end{frame}
+
+    \begin{frame}
+        $G_{diff}$は
+        \begin{equation}
+          \label{Gdiff_eq}
+            \dfrac{\partial G_{diff}}{\partial \tau} = - \hat{T}G_{diff} = \dfrac{\hbar^2}{2m}\dfrac{\partial^2 G_{diff}}{\partial x^2}
+        \end{equation}
+        $G_{branch/2}$は
+        \begin{equation}
+          \label{Gbranch_eq}
+            \dfrac{\partial G_{branch/2}}{\partial \tau} = -\dfrac{1}{2}(\hat{V} - V_{ref})G_{branch/2}
+        \end{equation}
+        の微分方程式を満たす。
+
+        これらの解は
+
+        \begin{align}
+            G_{diff}(x',x,\Delta\tau) &= \dfrac{1}{\sqrt{4\pi D\Delta\tau}}
+            e^{-\frac{(x'-x)^2}{4D\Delta\tau}} \\
+            \label{Gbranch}
+            G_{branch/2}(x',x,\Delta\tau) &= e^{-(\frac{1}{2}[V(x)+V(x')]-V_{ref})\Delta\tau}
+        \end{align}
+        ただし、$D=\dfrac{\hbar^2}{2m}$である。
+    \end{frame}
+
+
+    \subsection{アルゴリズム}
+
+    \begin{frame}{\insertsubsection}
+        \begin{enumerate}
+            \item 初期化
+            \begin{itemize}
+                \item $N_0$個の粒子を初期値$x_i$にランダムに置く。
+                \item $V_{ave} = V_{ref} = \frac{1}{N_0} \sum_{i=1}^{N_0}V(x_i)$ を計算。
+            \end{itemize}
+
+            \item 全ての粒子について
+            \begin{itemize}
+                \item 分散$2D\tau$、平均$0$のガウス分布から乱数$r$を生成する。
+                \item $x_i = x_i + r$と位置を更新する。($G_{diff}$による拡散過程に対応)
+                \item $w(x\to x',\tau) = G_{branch/2}(x',x,\Delta\tau)$を計算する。
+                \item 単位区間$[0,1]$から乱数$r$を生成する。$w+r$の整数部分を$w'$とする。
+
+                IF $w' > 1$
+
+                ~~~~粒子を$w'-1$個同じ位置に追加する。
+
+                ELSE IF $w' == 1$
+
+                ~~~~粒子数に変化なし。
+
+                ELSE
+
+                ~~~~その粒子を取り除く。
+
+                (分岐過程に対応)
+
+                END IF
+            \end{itemize}
+
+        \end{enumerate}
+
+    \end{frame}
+
+    \begin{frame}
+        \begin{enumerate}
+            \setcounter{enumi}{2}
+            \item $V_{ave}$と$V_{ref}$の更新
+
+            $V_{ave} = \frac{1}{N}\sum_{i} n_i V(x_i)$
+
+            $V_{ref} = V_{ave} - \frac{a}{N_0\Delta\tau}(N-N_0)$
+
+            \item 上記$2$と$3$を繰り返し、$V_{ave}$の平均を取ることで基底状態のエネルギーを求めることができる。
+        \end{enumerate}
+        同様に、$\hbar = m = 1$という単位系を採用し、
+        $(\Delta s)^2 = 2D\Delta \tau~(\tau \ll 1)$
+
+        また、$N$は上記$2$によって増減した後の粒子数であり、$a$は粒子数$N$が一定になるように調整するためのパラメーターである。
+    \end{frame}
+
+    \subsection{問題点}
+
+    \begin{frame}{\insertsubsection}
+      分岐過程において、(\ref{Gbranch})より
+      \begin{equation}
+        G_{branch/2}(x',x,\Delta\tau) = e^{-(\frac{1}{2}[V(x)+V(x')]-V_{ref})\Delta\tau} \nonumber
+      \end{equation}
+      この
+      \begin{equation}
+        V(x)+V(x')
+      \end{equation}
+      部分に問題がある。
+      \vfill
+      ポテンシャルが負に大きくなる場合に、粒子の複製数が非常に大きくなってしまう。
+      (例:電子が原子核に近づいた時のクーロンポテンシャル)
+
+      $\to$ 重み付き標本抽出を導入することで改善できる。
+    \end{frame}
+
+
+    \section{拡散量子モンテカルロ法2}
+
+    \subsection{重み付き標本抽出の導入の準備}
+    \begin{frame}{\insertsubsection}
+      \begin{itemize}
+        \item 試行関数$\Psi_T(x)$を導入することで、粒子が$V(x)$のより重要な方向に動くようにする。
+      \end{itemize}
+
+    \end{frame}
+
+    \begin{frame}
+      \begin{equation}
+        f(x,\tau) = \Psi(x,\tau)\Psi_T(x)
+      \end{equation}
+      を導入する。
+
+      これは、微分方程式
+      \begin{equation}
+        \frac{\partial f(x,\tau)}{\partial \tau} = D\frac{\partial^2 f}{\partial x^2} - D\frac{\partial [f(x,\tau)F(x)]}{\partial x} - (E_L(x) - V_{ref})f(x,\tau)
+      \end{equation}
+      を満たす。
+
+      $E_L(x)$は局所エネルギー
+      \begin{equation}
+        E_L(x) = \frac{\hat{H}\Psi_T}{\Psi_T} = V(x) - \frac{D}{\Psi_T}\frac{\partial^2 \Psi_T}{\partial x^2}
+      \end{equation}
+
+      $F(x)$は
+      \begin{equation}
+        F(x) = \frac{2}{\Psi_T}\frac{\partial \Psi_T}{\partial x}
+      \end{equation}
+      この$F$によって粒子が$|\Psi_T|^2$の領域から離れていくこと(ドリフト)を意味している。
+    \end{frame}
+
+    \begin{frame}
+      このドリフト項を組み込むと、
+      \begin{equation}
+        G_{diff}(x',x,\Delta\tau) = \dfrac{1}{\sqrt{4\pi D\Delta\tau}}
+        e^{-\frac{(x'-x - d\tau F(x))^2}{4D\Delta\tau}}
+      \end{equation}
+      となるが、$x$と$x'$の対称性を崩してしまう。
+
+      $\to$位置の更新がおかしくなってしまう。
+
+      そのため、位置の更新にメトロポリス・アルゴリズムを組み込むことで修正する。
+
+    \end{frame}
+
+    \begin{frame}
+      位置の更新を受け入れる確率を$p$とする。
+      \begin{equation}
+        p = \frac{|\Psi_T(x')|^2 G_{diff}(x,x',\Delta\tau)}{|\Psi_T(x)|^2G_{diff}(x',x,\Delta\tau)}
+      \end{equation}
+
+      $p \geq r$であれば位置を更新し、そうでなければ位置を更新しない。
+      ($r$は$[0,1]$の一様乱数)
+
+      また、分岐過程における$G_{branch}$は
+
+      \begin{equation}
+        G_{branch/2}(x',x,\Delta\tau) = e^{-(\frac{1}{2}[E_T(x)+E_T(x')]-V_{ref})\Delta\tau p}
+      \end{equation}
+
+      となる。
+
+      ここで、$\Delta\tau p$を実効的な分割時間という。
+
+      実効的な分割時間を用いるのは、拡散過程が起こらない場合があるためである。
+
+      局所エネルギー$E_L$の平均値が基底状態のエネルギーになる。
+    \end{frame}
+
+    \subsection{アルゴリズム}
+    \begin{frame}{\insertsubsection}
+        \begin{enumerate}
+            \item 初期化
+            \begin{itemize}
+                \item $N_0$個の粒子を初期値$x_i$にランダムに置く。
+                \item $V_{ave} = V_{ref} = \frac{1}{N_0} \sum_{i=1}^{N_0}V(x_i)$ を計算。
+            \end{itemize}
+
+            \item 全ての粒子について
+            \begin{itemize}
+                \item 分散$2D\tau$、平均$0$のガウス分布から乱数$r$を生成する。
+                \item $x_{new} = x_{old} + r + \Delta\tau F(x)$と新しい位置を決める。($G_{diff}$による拡散過程に対応)
+                \item 更新確率$p$を計算し、メトロポリス・アルゴリズムに従って位置を更新する。
+                \item 更新した位置で$w = G_{branch}$を計算する
+
+            \end{itemize}
+
+        \end{enumerate}
+
+    \end{frame}
+
+    \begin{frame}
+        \begin{enumerate}
+            \setcounter{enumi}{1}
+
+            \item 単位区間$[0,1]$から乱数$r$を生成する。$w+r$の整数部分を$w'$とする。
+
+            IF $w' > 1$
+
+            ~~~~粒子を$w'-1$個同じ位置に追加する。
+
+            ELSE IF $w' == 1$
+
+            ~~~~粒子数に変化なし。
+
+            ELSE
+
+            ~~~~その粒子を取り除く。
+
+            (分岐過程に対応)
+
+            END IF
+
+            \item $V_{ave}$と$V_{ref}$の更新
+
+            $V_{ave} = \frac{1}{N}\sum_{i} n_i E_L(x_i)$
+
+            $V_{ref} = V_{ave} - \frac{a}{N_0\Delta\tau}(N-N_0)$
+
+            \item 上記$2$と$3$を繰り返し、$V_{ave}$の平均を取ることで基底状態のエネルギーを求めることができる。
+        \end{enumerate}
+        % 同様に、$\hbar = m = 1$という単位系を採用し、
+        % $(\Delta s)^2 = 2D\Delta \tau~(\tau \ll 1)$
+        %
+        % また、$N$は上記$2$によって増減した後の粒子数であり、$a$は粒子数$N$が一定になるように調整するためのパラメーターである。
+    \end{frame}
+
+    \section{拡散量子モンテカルロ法3}
+
+    \subsection{他の改善方法}
+    \begin{frame}
+      重み付き標本抽出の他にもアルゴリズムを改善する方法がある。
+
+      \begin{itemize}
+        \item 粒子数を変化させる分岐過程で、粒子の重みを変更することである。
+      \end{itemize}
+      具体的に$n$ステップ後の,$k$番目の粒子が重みが
+      \begin{equation}
+        W_n^k = \prod_{i = 1}^n G_{branch}^{(i,k)}
+      \end{equation}
+      となるようにする。
+
+      $G_{branch}^{(i,k)}$は$i$ステップでの$k$番目の粒子の$G_{branch}$である。
+
+    \end{frame}
+
+    \subsection{アルゴリズム}
+    \begin{frame}{\insertsubsection}
+      アルゴリズムは単純で、拡散量子モンテカルロ$1$でのアルゴリズムにおいて、
+      粒子の重み$w$を$W_n^k$に置き換えれば良い。
+
+      ただし、粒子を複製する処理で、重み$W$を持った粒子が$n$個に複製される時、
+      それらの粒子の重みは$W/n$になることに注意せよ。
+    \end{frame}
+
+
+
+
+
+\end{document}
